@@ -1,0 +1,42 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtualenv
+venv/
+.venv/
+.env
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Pytest cache
+.pytest_cache/
+
+# Logs
+*.log
+
+# Audio files (keep an empty audio/.gitkeep if you want the folder tracked)
+audio/*
+!audio/.gitkeep
+
+# Secrets
+secrets.json
+
+# Node
+node_modules/
+
+# Misc
+coverage.xml
+coverage/
+TODO.md
+.wakatime-project
