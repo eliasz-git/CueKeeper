@@ -41,3 +41,10 @@ coverage/
 TODO.md
 .wakatime-project
 tutorial/
+
+# Local show state (created on first run)
+data.json
+data.tmp
+
+# Agent tooling
+.opencode/
