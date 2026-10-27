@@ -24,6 +24,15 @@ Example entry (fill-in for initial scaffold)
 - Verification: manual review, basic local smoke tests; no AI output was committed without human edits
 - Notes: kept AI usage minimal and focused on non-core algorithmic work; primary logic authored by me.
 
+Log entries
+- Date: 2026-10-26
+- Tool: opencode agent (Claude)
+- Purpose: debugging, tests, repo hygiene, README update
+- Files affected: src/main.py (upload path traversal fix, id/file collision fix, route order fix, env-configurable paths), tests/test_basic.py (new suite), pyproject.toml, requirements*.txt, package.json, .gitignore, .github/workflows/ci.yml, README.md
+- Approx. % of content affected: most of src/main.py was edited; no new features (UI, WebSocket triggering) were written
+- Verification: pytest (13 passed), ruff, manual uvicorn + curl smoke test
+- Notes: data.json untracked since it is per-show state the server writes
+
 Guidance for future use & best practices
 - Prefer using AI for non-core logic: docs, commit messages, boilerplate, and idea prioritization.
 - When using AI for code completions, always run tests and read the generated code line-by-line before committing.
