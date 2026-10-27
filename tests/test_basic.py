@@ -3,6 +3,7 @@ import json
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.testclient import TestClient as WSTestClient
 
 
 @pytest.fixture
@@ -84,3 +85,37 @@ def test_index_is_served(client):
     r = client.get("/")
     assert r.status_code == 200
     assert "CueKeeper" in r.text
+
+
+def test_delete_cue(client):
+    upload(client, "Thunder", "thunder.mp3")
+    r = client.delete("/api/cues/1")
+    assert r.status_code == 204
+    assert client.get("/api/cues").json() == []
+
+
+def test_delete_missing_cue(client):
+    r = client.delete("/api/cues/999")
+    assert r.status_code == 404
+
+
+def test_trigger_cue(client):
+    upload(client, "Thunder", "thunder.mp3")
+    r = client.post("/api/cues/1/trigger")
+    assert r.status_code == 200
+    assert r.json()["status"] == "triggered"
+    assert r.json()["cue"]["id"] == 1
+
+
+def test_trigger_missing_cue(client):
+    r = client.post("/api/cues/999/trigger")
+    assert r.status_code == 404
+
+
+def test_websocket_connects(client):
+    import src.main
+
+    main = importlib.reload(src.main)
+    with WSTestClient(main.app).websocket_connect("/ws") as ws:
+        ws.send_text("ping")
+        # Connection stays open; no echo expected from server

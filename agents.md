@@ -32,6 +32,13 @@ Log entries
 - Approx. % of content affected: most of src/main.py was edited; no new features (UI, WebSocket triggering) were written
 - Verification: pytest (13 passed), ruff, manual uvicorn + curl smoke test
 - Notes: data.json untracked since it is per-show state the server writes
+- Date: 2026-10-27
+- Tool: opencode agent (Claude)
+- Purpose: build web UI, WebSocket triggering, GO button, delete and trigger endpoints
+- Files affected: src/main.py (DELETE /api/cues/{id}, POST /api/cues/{id}/trigger, WebSocket /ws, ConnectionManager), static/index.html (cue list, upload form, play/delete/GO buttons), static/style.css, static/app.js (fetch API, WebSocket client, audio playback), tests/test_basic.py (delete, trigger, websocket tests)
+- Approx. % of content affected: ~30% (new UI + WebSocket layer)
+- Verification: pytest (18 passed)
+- Notes: WebSocket broadcast on trigger so remote clients can play cues; static served at "/" via StaticFiles
 
 Guidance for future use & best practices
 - Prefer using AI for non-core logic: docs, commit messages, boilerplate, and idea prioritization.

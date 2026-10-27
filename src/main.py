@@ -3,9 +3,9 @@ import os
 import shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Set
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -40,6 +40,32 @@ def unique_audio_path(filename):
     return path
 
 
+class ConnectionManager:
+    def __init__(self):
+        self.active: Set[WebSocket] = set()
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active.add(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active.discard(websocket)
+
+    async def broadcast(self, message: dict):
+        payload = json.dumps(message)
+        dead = []
+        for ws in self.active:
+            try:
+                await ws.send_text(payload)
+            except Exception:
+                dead.append(ws)
+        for ws in dead:
+            self.disconnect(ws)
+
+
+manager = ConnectionManager()
+
+
 @asynccontextmanager
 async def lifespan(app):
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
@@ -62,18 +88,15 @@ def create_cue(name: Annotated[str, Form()], file: Annotated[UploadFile, File()]
     if not name:
         raise HTTPException(400, "Cue name is required")
 
-    # Drop any directory parts so uploads can't escape the audio folder
     filename = Path(file.filename or "").name
     if not filename or Path(filename).suffix.lower() not in AUDIO_EXTENSIONS:
         raise HTTPException(400, "Upload an audio file (" + ", ".join(sorted(AUDIO_EXTENSIONS)) + ")")
 
-    # 1. Save the uploaded file to the audio/ folder without overwriting another cue's file
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     file_path = unique_audio_path(filename)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # 2. Build the cue object
     data = load_data()
     cue = {
         "id": max((c["id"] for c in data["cues"]), default=0) + 1,
@@ -81,11 +104,40 @@ def create_cue(name: Annotated[str, Form()], file: Annotated[UploadFile, File()]
         "file": file_path.name,
     }
 
-    # 3. Append to data.json
     data["cues"].append(cue)
     save_data(data)
 
     return cue
+
+
+@app.delete("/api/cues/{cue_id}", status_code=204)
+def delete_cue(cue_id: int):
+    data = load_data()
+    cues = [c for c in data["cues"] if c["id"] != cue_id]
+    if len(cues) == len(data["cues"]):
+        raise HTTPException(404, "Cue not found")
+    data["cues"] = cues
+    save_data(data)
+
+
+@app.post("/api/cues/{cue_id}/trigger")
+async def trigger_cue(cue_id: int):
+    data = load_data()
+    cue = next((c for c in data["cues"] if c["id"] == cue_id), None)
+    if not cue:
+        raise HTTPException(404, "Cue not found")
+    await manager.broadcast({"action": "play", "cue": cue})
+    return {"status": "triggered", "cue": cue}
+
+
+@app.websocket("/ws")
+async def ws(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
 @app.get("/hello")
@@ -94,5 +146,4 @@ def hello():
 
 
 app.mount("/audio", StaticFiles(directory=AUDIO_DIR, check_dir=False), name="audio")
-# Mounted last: a mount at "/" catches every path, so routes declared after it never match
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

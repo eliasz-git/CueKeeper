@@ -1,0 +1,188 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 1rem;
+  background: #f5f5f5;
+  color: #1a1a1a;
+}
+
+header {
+  margin-bottom: 1.5rem;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+header p {
+  margin: 0.25rem 0 0;
+  color: #666;
+}
+
+main {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+section {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+section h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+form input[type="text"] {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+form input[type="file"] {
+  padding: 0.5rem;
+}
+
+form button {
+  padding: 0.5rem 1rem;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+form button:hover {
+  background: #333;
+}
+
+#upload-msg {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+#cue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cue {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 6px;
+}
+
+.cue-info {
+  flex: 1;
+}
+
+.cue-name {
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.cue-file {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+.cue-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+button.play {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button.play:hover {
+  background: #0052a3;
+}
+
+button.go {
+  background: #d00;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+button.go:hover {
+  background: #a00;
+}
+
+button.delete {
+  background: transparent;
+  color: #999;
+  border: 1px solid #ddd;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.delete:hover {
+  color: #d00;
+  border-color: #d00;
+}
+
+.hidden {
+  display: none;
+}
+
+footer {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #1a1a1a;
+  color: white;
+  border-radius: 8px;
+  text-align: center;
+}
+
+#ws-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+#ws-status.connected {
+  background: #0a0;
+}
+
+#ws-status.disconnected {
+  background: #444;
+}

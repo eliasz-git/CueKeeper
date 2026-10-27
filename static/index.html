@@ -1,12 +1,39 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CueKeeper</title>
-    </head>
-    <body>
-        <h1>CueKeeper</h1>
-        <p>Sound cue manager for theater.</p>
-    </body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CueKeeper</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>CueKeeper</h1>
+      <p>Sound cue manager for theater</p>
+    </header>
+
+    <main>
+      <section id="upload">
+        <h2>Add a cue</h2>
+        <form id="upload-form">
+          <input type="text" id="cue-name" placeholder="Cue name" required />
+          <input type="file" id="cue-file" accept="audio/*" required />
+          <button type="submit">Upload</button>
+        </form>
+        <p id="upload-msg"></p>
+      </section>
+
+      <section id="cues">
+        <h2>Cues</h2>
+        <div id="cue-list"></div>
+        <p id="no-cues" class="hidden">No cues yet. Upload one above.</p>
+      </section>
+    </main>
+
+    <footer>
+      <div id="ws-status">Disconnected</div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
 </html>
