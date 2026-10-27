@@ -1,1 +1,1 @@
-{"name": "CueKeeper", "version": "0.1.0", "main": "src/main.py", "scripts": {"start": "uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"}}
+{"name": "CueKeeper", "version": "0.1.0", "main": "src/main.py", "scripts": {"start": "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000} --reload"}}
