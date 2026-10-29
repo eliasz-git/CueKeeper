@@ -39,6 +39,12 @@ Log entries
 - Approx. % of content affected: ~30% (new UI + WebSocket layer)
 - Verification: pytest (18 passed)
 - Notes: WebSocket broadcast on trigger so remote clients can play cues; static served at "/" via StaticFiles
+- Date: 2026-10-29
+- Tool: opencode agent (Claude)
+- Purpose: UI audit remediation — fail-closed auth, rate-limit upload, unique tmp save, CSP, GO button, dark theme, delete confirm, WS reconnect, inline token field, versioning + repo rules
+- Files affected: src/main.py (auth hardening, rate limiting, CSP, healthz, __version__), static/index.html (GO button, token box, theme toggle, labels, ARIA, CSP meta), static/style.css (dark booth theme, focus states, contrast), static/app.js (token auth header, WS reconnect, encodeURIComponent, GO logic, delete confirm, error handling), tests/test_basic.py (new security tests), VERSIONING.md (new), REPO_RULES.md (new), AGENTS.md (this entry)
+- Approx. % of content affected: ~40% (backend auth + frontend UX + docs)
+- Verification: pytest (37 passed), main.py syntax check
 
 Guidance for future use & best practices
 - Prefer using AI for non-core logic: docs, commit messages, boilerplate, and idea prioritization.
@@ -49,3 +55,16 @@ Guidance for future use & best practices
 Stardance / Submission tip
 - Paste the one‑line declaration into the project README and the Stardance AI usage field.
 - Attach one example log entry to your submission (the Example entry above is fine) so judges can see you were transparent.
+
+## Repo rules
+
+Follow `REPO_RULES.md` before committing:
+1. Run `ruff check src tests` and `pytest -q`.
+2. Smoke-test the server manually (upload, play, WebSocket status).
+3. Commit with noreply identity `117379918+tundra-node@users.noreply.github.com` and `Co-Authored-By: Claude Code <noreply@anthropic.com>`.
+4. Do not commit directly to `main` for feature work; branch first.
+5. End PR descriptions with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+
+## Versioning
+
+Follow `VERSIONING.md`. The single source of truth is `__version__` in `src/main.py`; `package.json` and release tags are derived from it.
