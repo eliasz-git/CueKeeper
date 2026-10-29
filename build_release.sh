@@ -22,8 +22,8 @@ if [ "$MAIN_VER" != "$VER_NUM" ] || [ "$PKG_VER" != "$VER_NUM" ]; then
 fi
 
 echo "==> Running checks..."
-ruff check src tests || { echo "RUFF FAILED"; exit 1; }
-pytest -q || { echo "PYTEST FAILED"; exit 1; }
+".venv/bin/ruff" check src tests || { echo "RUFF FAILED"; exit 1; }
+".venv/bin/python" -m pytest -q || { echo "PYTEST FAILED"; exit 1; }
 
 echo "==> Checks passed. Version $VERSION is consistent across src/main.py and package.json."
 
