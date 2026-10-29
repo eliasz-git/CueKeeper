@@ -25,24 +25,16 @@ pytest -q || { echo "PYTEST FAILED"; exit 1; }
 echo "==> Checks passed. Version $VERSION is consistent across src/main.py and package.json."
 
 if [ "$SKIP_RELEASE" = "--skip-release" ]; then
-  echo "==> Skipping GitHub release (--skip-release passed)."
-  echo "==> To create the release manually:"
-  echo "    git tag v$VERSION"
-  echo "    git push origin v$VERSION"
-  echo "    gh release create v$VERSION --title \"CueKeeper $VERSION\" --notes \"CueKeeper $VERSION\""
-  exit 0
-fi
+  echo "==> Skipping GitHub release creation (--skip-release passed)."
+  echo "==> Tagging and pushing v$VERSION (release artifacts can be added via gh release create later)."
+else
+  echo "==> Creating GitHub release v$VERSION..."
+  git tag -d "v$VERSION" 2>/dev/null || true
+  git push origin --delete "v$VERSION" 2>/dev/null || true
 
-echo "==> Creating GitHub release v$VERSION..."
-git tag -d "v$VERSION" 2>/dev/null || true
-git push origin --delete "v$VERSION" 2>/dev/null || true
-
-git tag "v$VERSION"
-git push origin "v$VERSION"
-
-gh release create "v$VERSION" \
-  --title "CueKeeper $VERSION" \
-  --notes "CueKeeper $VERSION
+  gh release create "v$VERSION" \
+    --title "CueKeeper $VERSION" \
+    --notes "CueKeeper $VERSION
 
 ## Bundles
 - Source-only release. Run: pip install -r requirements.txt && uvicorn src.main:app
@@ -53,5 +45,17 @@ gh release create "v$VERSION" \
 ## Notes
 - CueKeeper is LAN-first show control. Set CUEKEEPER_TOKEN before deploying on a shared network.
 - Source: https://github.com/tundra-node/CueKeeper"
+fi
 
-echo "==> Done. Release v$VERSION created."
+echo "==> Tagging v$VERSION..."
+git tag -d "v$VERSION" 2>/dev/null || true
+git push origin --delete "v$VERSION" 2>/dev/null || true
+
+git tag "v$VERSION"
+git push origin "v$VERSION"
+
+if [ "$SKIP_RELEASE" != "--skip-release" ]; then
+  echo "==> Done. Release v$VERSION created."
+else
+  echo "==> Done. Tag v$VERSION pushed (GitHub release creation skipped)."
+fi
