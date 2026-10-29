@@ -1,16 +1,79 @@
+/* CueKeeper — theater sound-cue manager styles.
+ *
+ * Defaults to a dark "booth" theme so the screen is usable in a darkened
+ * control booth. Respects prefers-color-scheme and a manual theme toggle
+ * (app.js toggles data-theme="light" on <html>).
+ */
+:root {
+  --bg: #0b0c10;
+  --surface: #16181f;
+  --surface-2: #1f222a;
+  --text: #e8e8ea;
+  --text-dim: #9aa0a8;
+  --border: #2c3036;
+  --accent: #3a86ff;
+  --accent-hover: #5a9df7;
+  --danger: #ff4d4d;
+  --danger-hover: #ff7575;
+  --success: #2ecc71;
+  --error: #ff4d4d;
+  --focus: #7c9cff;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] {
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-2: #fafafa;
+  --text: #1a1a1a;
+  --text-dim: #666666;
+  --border: #cccccc;
+  --accent: #0066cc;
+  --accent-hover: #0052a3;
+  --danger: #d00;
+  --danger-hover: #a00;
+  --success: #0a8a00;
+  --error: #c00;
+  --focus: #0066cc;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 1rem;
-  background: #f5f5f5;
-  color: #1a1a1a;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.skip-link {
+  position: absolute;
+  top: -10000px;
+  left: 0;
+  background: var(--accent);
+  color: var(--text);
+  padding: 0.5rem 1rem;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 0.5rem;
+  left: 0.5rem;
 }
 
 header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -21,7 +84,54 @@ header h1 {
 
 header p {
   margin: 0.25rem 0 0;
-  color: #666;
+  color: var(--text-dim);
+}
+
+header .toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.token-box {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+}
+
+.token-box label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.token-box input[type="password"] {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.token-box input[type="password"]::placeholder {
+  color: var(--text-dim);
+}
+
+.token-box button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+#token-msg {
+  margin: 0.3rem 0 0 0;
+  font-size: 0.85rem;
 }
 
 main {
@@ -30,40 +140,60 @@ main {
 }
 
 section {
-  background: white;
+  background: var(--surface);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
 section h2 {
   margin-top: 0;
   font-size: 1.1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 0.5rem;
+  color: var(--text);
 }
 
 form {
   display: flex;
   gap: 0.5rem;
   align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+form label {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  margin-bottom: 0.1rem;
+  display: block;
 }
 
 form input[type="text"] {
   flex: 1;
+  min-width: 140px;
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+form input[type="text"]::placeholder {
+  color: var(--text-dim);
 }
 
 form input[type="file"] {
   padding: 0.5rem;
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 form button {
   padding: 0.5rem 1rem;
-  background: #1a1a1a;
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 4px;
@@ -72,7 +202,12 @@ form button {
 }
 
 form button:hover {
-  background: #333;
+  background: var(--accent-hover);
+}
+
+form button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 #upload-msg {
@@ -91,8 +226,8 @@ form button:hover {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: #fafafa;
-  border: 1px solid #eee;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 6px;
 }
 
@@ -103,11 +238,12 @@ form button:hover {
 .cue-name {
   font-weight: 600;
   margin: 0 0 0.25rem 0;
+  color: var(--text);
 }
 
 .cue-file {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-dim);
   margin: 0;
 }
 
@@ -117,7 +253,7 @@ form button:hover {
 }
 
 button.play {
-  background: #0066cc;
+  background: var(--accent);
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -127,11 +263,16 @@ button.play {
 }
 
 button.play:hover {
-  background: #0052a3;
+  background: var(--accent-hover);
+}
+
+button.play:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 button.go {
-  background: #d00;
+  background: var(--danger);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -142,21 +283,45 @@ button.go {
 }
 
 button.go:hover {
-  background: #a00;
+  background: var(--danger-hover);
+}
+
+button.go:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 button.delete {
   background: transparent;
-  color: #999;
-  border: 1px solid #ddd;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
   padding: 0.4rem 0.6rem;
   border-radius: 4px;
   cursor: pointer;
 }
 
 button.delete:hover {
-  color: #d00;
-  border-color: #d00;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+button.delete:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+button.theme-toggle {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+button.theme-toggle:hover {
+  background: var(--border);
 }
 
 .hidden {
@@ -166,10 +331,11 @@ button.delete:hover {
 footer {
   margin-top: 2rem;
   padding: 1rem;
-  background: #1a1a1a;
-  color: white;
+  background: var(--surface);
+  color: var(--text);
   border-radius: 8px;
   text-align: center;
+  border: 1px solid var(--border);
 }
 
 #ws-status {
@@ -180,9 +346,11 @@ footer {
 }
 
 #ws-status.connected {
-  background: #0a0;
+  background: var(--success);
+  color: #000;
 }
 
 #ws-status.disconnected {
-  background: #444;
+  background: var(--text-dim);
+  color: #fff;
 }

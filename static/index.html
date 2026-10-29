@@ -3,24 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; media-src 'self'; base-uri 'self'; form-action 'self'"
+    />
     <title>CueKeeper</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <a href="#cue-list" class="skip-link">Skip to cue list</a>
+
     <header>
       <h1>CueKeeper</h1>
       <p>Sound cue manager for theater</p>
+
+      <div id="token-box" class="token-box" role="group" aria-label="Access token">
+        <label for="cuekeeper-token">Access token</label>
+        <input
+          type="password"
+          id="cuekeeper-token"
+          placeholder="Token (required by server)"
+          autocomplete="off"
+        />
+        <button id="token-save">Save</button>
+        <p id="token-msg"></p>
+      </div>
+
+      <button id="theme-toggle" aria-label="Toggle dark/light theme">Theme</button>
+      <button id="go-btn" class="go" aria-label="Play next cue (GO)">GO</button>
     </header>
 
     <main>
       <section id="upload">
         <h2>Add a cue</h2>
         <form id="upload-form">
-          <input type="text" id="cue-name" placeholder="Cue name" required />
-          <input type="file" id="cue-file" accept="audio/*" required />
+          <label for="cue-name">Cue name</label>
+          <input
+            type="text"
+            id="cue-name"
+            name="cue-name"
+            placeholder="Cue name"
+            required
+          />
+          <label for="cue-file">Audio file</label>
+          <input
+            type="file"
+            id="cue-file"
+            name="cue-file"
+            accept="audio/*"
+            required
+          />
           <button type="submit">Upload</button>
         </form>
-        <p id="upload-msg"></p>
+        <p id="upload-msg" role="status" aria-live="polite"></p>
       </section>
 
       <section id="cues">
@@ -31,7 +66,12 @@
     </main>
 
     <footer>
-      <div id="ws-status">Disconnected</div>
+      <div
+        id="ws-status"
+        role="status"
+        aria-live="polite"
+        aria-label="WebSocket connection status"
+      >Disconnected</div>
     </footer>
 
     <script src="app.js"></script>
