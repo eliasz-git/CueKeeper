@@ -29,7 +29,7 @@ echo "==> Checks passed. Version $VERSION is consistent across src/main.py and p
 
 if [ "$SKIP_RELEASE" = "--skip-release" ]; then
   echo "==> Skipping GitHub release creation (--skip-release passed)."
-  echo "==> Tagging and pushing v$VERSION (release artifacts can be added via gh release create later)."
+  echo "==> Tagging and pushing $VERSION (release artifacts can be added via gh release create later)."
 else
   echo "==> Creating GitHub release $VERSION..."
   git tag -d "$VERSION" 2>/dev/null || true
