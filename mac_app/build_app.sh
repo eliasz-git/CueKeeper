@@ -9,7 +9,7 @@
 #   * stores show data in ~/Library/Application Support/CueKeeper
 #   * starts uvicorn on http://0.0.0.0:8000
 #   * opens a NATIVE macOS window (WKWebView via PyObjC) — NOT a browser tab
-#   * shows the token in a notification (paste it into the UI's token field)
+#   * auto-fills the access token in the UI (no copy/paste needed)
 #
 # Usage: ./mac_app/build_app.sh
 set -euo pipefail
@@ -175,4 +175,4 @@ chmod +x "${MACOS}/CueKeeperLauncher"
 echo "==> Done: ${APP_PATH}"
 echo "    Double-click CueKeeper.app to launch (native window, not a browser tab)."
 echo "    Show data: ${HOME}/Library/Application Support/CueKeeper"
-echo "    Token is auto-generated and shown in a notification on first launch."
+echo "    Token is auto-generated and auto-filled in the app UI."
