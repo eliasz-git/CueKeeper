@@ -13,6 +13,9 @@ build/
 dist/
 *.egg-info/
 
+# Bundled Mac app (build artifact; contains a venv — do not commit)
+CueKeeper.app/
+
 # Editor/OS
 .vscode/
 .idea/

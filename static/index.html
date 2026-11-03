@@ -7,30 +7,59 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; media-src 'self'; base-uri 'self'; form-action 'self'"
     />
-    <title>CueKeeper</title>
+    <title>CueKeeper — Sound Cues</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <a href="#cue-list" class="skip-link">Skip to cue list</a>
 
     <header>
-      <h1>CueKeeper</h1>
-      <p>Sound cue manager for theater</p>
-
-      <div id="token-box" class="token-box" role="group" aria-label="Access token">
-        <label for="cuekeeper-token">Access token</label>
-        <input
-          type="password"
-          id="cuekeeper-token"
-          placeholder="Token (required by server)"
-          autocomplete="off"
-        />
-        <button id="token-save">Save</button>
-        <p id="token-msg"></p>
+      <div class="brand">
+        <h1>CueKeeper</h1>
+        <p>Sound cue manager for theater</p>
       </div>
 
-      <button id="theme-toggle" aria-label="Toggle dark/light theme">Theme</button>
-      <button id="go-btn" class="go" aria-label="Play next cue (GO)">GO</button>
+      <div class="toolbar">
+        <div id="token-box" class="token-box" role="group" aria-label="Access token">
+          <label for="cuekeeper-token">Access token</label>
+          <input
+            type="password"
+            id="cuekeeper-token"
+            placeholder="Token (required by server)"
+            autocomplete="off"
+          />
+          <button type="button" id="token-toggle" aria-label="Show/hide token">👁️</button>
+          <button type="button" id="token-save">Save</button>
+          <p id="token-msg"></p>
+        </div>
+
+        <button type="button" id="theme-toggle" aria-label="Toggle dark/light theme">
+          Light theme
+        </button>
+
+        <div id="ws-status" role="status" aria-live="polite" aria-label="WebSocket connection status">
+          <span class="ws-dot"></span>
+          <span>Disconnected</span>
+        </div>
+
+        <div id="volume-box" class="volume-box" role="group" aria-label="Volume">
+          <button type="button" id="mute-btn" aria-label="Mute/unmute audio">🔊</button>
+          <input
+            type="range"
+            id="volume-slider"
+            min="0"
+            max="100"
+            value="100"
+            aria-label="Volume"
+          />
+        </div>
+
+        <div id="timer" role="timer" aria-live="off" aria-label="Playback timer">0:00</div>
+
+        <button type="button" id="go-btn" class="go" aria-label="Play next cue (GO)">
+          GO
+        </button>
+      </div>
     </header>
 
     <main>
@@ -53,7 +82,7 @@
             accept="audio/*"
             required
           />
-          <button type="submit">Upload</button>
+          <button type="submit" id="upload-btn">Upload</button>
         </form>
         <p id="upload-msg" role="status" aria-live="polite"></p>
       </section>
@@ -64,15 +93,6 @@
         <p id="no-cues" class="hidden">No cues yet. Upload one above.</p>
       </section>
     </main>
-
-    <footer>
-      <div
-        id="ws-status"
-        role="status"
-        aria-live="polite"
-        aria-label="WebSocket connection status"
-      >Disconnected</div>
-    </footer>
 
     <script src="app.js"></script>
   </body>

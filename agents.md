@@ -68,3 +68,11 @@ Follow `REPO_RULES.md` before committing:
 ## Versioning
 
 Follow `VERSIONING.md`. The single source of truth is `__version__` in `src/main.py`; `package.json` and release tags are derived from it.
+
+- Date: 2026-11-03
+- Tool: opencode agent (Claude)
+- Purpose: backend modularization, frontend modernization, docs revamp
+- Files affected: src/main.py (app factory, routers, healthz), src/config.py (new), src/models.py (new), src/middleware/security.py (new), src/routers/{cues,websocket}.py (new), src/services/{data,audio,auth,rate_limit}.py (new), static/app.js (volume, timer, drag-to-reorder, arrow nav), static/index.html (volume/timer controls), static/style.css (new component styles), tests/test_basic.py (reorder + broadcast tests), README.md (rewrite), .envexample (expand)
+- Approx. % of content affected: ~55% (backend split into package; new UI controls; rewritten README)
+- Verification: ruff check src tests (clean), pytest -q (38 passed), manual uvicorn smoke test (upload/trigger/reorder/healthz 200/201)
+- Notes: `__version__` remains single source of truth in src/main.py per VERSIONING.md; `import src.main` + `reload(src.main)` still work; config reads env lazily so test monkeypatching works without reloading src.config

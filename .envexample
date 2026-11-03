@@ -1,2 +1,26 @@
+# CueKeeper environment variables.
+# Copy this file to .env and set CUEKEEPER_TOKEN before running on a shared LAN.
+
+# Access token required on mutating endpoints and WebSocket (Authorization: Bearer <token>).
+# Set this to a secret of your choice. Leave blank only for isolated local dev.
 CUEKEEPER_TOKEN=
+
+# When "true" (default), mutating endpoints/WebSocket fail closed unless a token is set.
+# Set to "false" to opt into insecure local-dev mode.
+CUEKEEPER_AUTH_REQUIRED=true
+
+# HTTP port used by `npm start`
 PORT=8000
+
+# Where cue metadata is stored (created on first run; not tracked in git)
+# CUEKEEPER_DATA=./data.json
+
+# Where uploaded audio files are stored (created on first run; not tracked in git)
+# CUEKEEPER_AUDIO=./audio
+
+# Maximum upload size in megabytes
+# CUEKEEPER_MAX_UPLOAD_MB=50
+
+# Rate limiting: requests per IP per path per window
+# CUEKEEPER_RATE_LIMIT_REQUESTS=60
+# CUEKEEPER_RATE_LIMIT_WINDOW=60

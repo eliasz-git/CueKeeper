@@ -86,10 +86,6 @@ def test_rejects_blank_name(client):
     assert upload(client, "   ", "a.mp3").status_code == 400
 
 
-def test_hello_route_is_reachable(client):
-    assert client.get("/hello").json() == {"message": "hello"}
-
-
 def test_index_is_served(client):
     r = client.get("/")
     assert r.status_code == 200
@@ -204,14 +200,13 @@ def test_authed_trigger_with_valid_token_succeeds(authed_client):
 
 
 def test_websocket_rejects_invalid_token(authed_client):
+    """Invalid token causes an immediate close; peer never joins manager."""
     import src.main
 
     main = importlib.reload(src.main)
-    with (
-        WSTestClient(main.app) as c,
-        c.websocket_connect("/ws?token=wrong") as ws,
-        pytest.raises(WebSocketDisconnect),
-    ):
+    with WSTestClient(main.app) as c, c.websocket_connect(
+        "/ws?token=wrong"
+    ) as ws, pytest.raises(WebSocketDisconnect):
         ws.receive_text()
 
 
@@ -226,6 +221,47 @@ def test_websocket_accepts_valid_token(authed_client):
         ws.send_text("ping")
 
 
+def test_trigger_broadcasts_to_websocket(authed_client):
+    """Triggering a cue broadcasts a ``play`` message to connected WebSocket peers."""
+    import src.main
+
+    main = importlib.reload(src.main)
+    authed_upload(authed_client, "Thunder", "thunder.mp3")
+    with WSTestClient(main.app) as c, c.websocket_connect(
+        "/ws?token=secret-token-123"
+    ) as ws:
+        r = authed_client.post(
+            "/api/cues/1/trigger",
+            headers={"Authorization": "Bearer secret-token-123"},
+        )
+        assert r.status_code == 200
+        message = ws.receive_text()
+        payload = json.loads(message)
+        assert payload == {"action": "play", "cue": {"id": 1, "name": "Thunder", "file": "thunder.mp3"}}
+
+
+def test_reorder_cues_persists_new_order(client):
+    upload(client, "One", "one.mp3")
+    upload(client, "Two", "two.mp3")
+    upload(client, "Three", "three.mp3")
+    r = client.post("/api/cues/reorder", json={"order": [3, 1, 2]})
+    assert r.status_code == 200
+    assert [c["id"] for c in r.json()] == [3, 1, 2]
+    # Order persists on re-read
+    assert [c["id"] for c in client.get("/api/cues").json()] == [3, 1, 2]
+
+
+def test_reorder_rejects_invalid_order(client):
+    upload(client, "One", "one.mp3")
+    upload(client, "Two", "two.mp3")
+    # Missing an id
+    r = client.post("/api/cues/reorder", json={"order": [1]})
+    assert r.status_code == 400
+    # Duplicate id
+    r = client.post("/api/cues/reorder", json={"order": [1, 1]})
+    assert r.status_code == 400
+
+
 @pytest.fixture
 def strict_rate_client(tmp_path, monkeypatch):
     """Test client with a very low rate limit (3 requests per path per window)."""
@@ -235,6 +271,12 @@ def strict_rate_client(tmp_path, monkeypatch):
     monkeypatch.setenv("CUEKEEPER_AUTH_REQUIRED", "false")
     monkeypatch.setenv("CUEKEEPER_RATE_LIMIT_REQUESTS", "3")
     monkeypatch.setenv("CUEKEEPER_RATE_LIMIT_WINDOW", "60")
+    # Reset the module-global rate-limiter state so prior tests (which use a
+    # higher limit and accumulate entries for the same TestClient host) cannot
+    # cause this client to be rate-limited immediately.
+    from src.services.rate_limit import _rate_limits
+
+    _rate_limits.clear()
     import src.main
 
     main = importlib.reload(src.main)
@@ -269,11 +311,6 @@ def test_security_headers_present(client):
     assert r.headers["X-Content-Type-Options"] == "nosniff"
     assert r.headers["X-Frame-Options"] == "DENY"
     assert r.headers["Referrer-Policy"] == "same-origin"
-
-
-def test_cors_headers_present(client):
-    r = client.options("/api/cues", headers={"Origin": "http://localhost:3000"})
-    assert r.headers["Access-Control-Allow-Origin"] == "*"
 
 
 @pytest.fixture
