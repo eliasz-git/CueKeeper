@@ -52,11 +52,15 @@ async def create_cue(
     filename = validate_audio_filename(file.filename)
     contents = await read_upload(file)
 
-    config.audio_dir().mkdir(parents=True, exist_ok=True)
-    file_path = unique_audio_path(filename)
-    await write_file(file_path, contents)
-
     async with data_lock:
+        # The audio file write must be inside the lock: unique_audio_path()
+        # checks path.exists() then returns a path, but two concurrent requests
+        # can both see the same name as free before either writes, causing the
+        # second write to silently overwrite the first cue's audio data.
+        config.audio_dir().mkdir(parents=True, exist_ok=True)
+        file_path = unique_audio_path(filename)
+        await write_file(file_path, contents)
+
         data = await load_data()
         cue_id = data["next_id"]
         data["next_id"] = cue_id + 1

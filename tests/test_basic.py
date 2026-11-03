@@ -366,3 +366,76 @@ def test_healthz_endpoint(client):
     r = client.get("/healthz")
     assert r.status_code == 200
     assert r.json() == {"status": "ok"}
+
+
+def test_concurrent_same_filename_does_not_corrupt_audio(tmp_path, monkeypatch):
+    """Concurrent uploads with the same filename must not overwrite each other's audio.
+
+    Regression test for a TOCTOU race: unique_audio_path() checked path.exists()
+    then returned a path, but the file write used to happen outside data_lock, so
+    two concurrent requests could both see the same name as free and the second
+    write would silently clobber the first cue's audio data.
+
+    The fix claims each filename atomically via O_CREAT|O_EXCL and performs the
+    write inside data_lock, so concurrent uploads of the same name each get a
+    unique file with their own content intact. ID assignment order is
+    non-deterministic under concurrency, so this test verifies content integrity
+    without assuming which cue gets which ID.
+    """
+    import asyncio
+    import io
+
+    import httpx
+    import importlib
+    import src.main
+
+    monkeypatch.setenv("CUEKEEPER_DATA", str(tmp_path / "data.json"))
+    monkeypatch.setenv("CUEKEEPER_AUDIO", str(tmp_path / "audio"))
+    monkeypatch.setenv("CUEKEEPER_AUTH_REQUIRED", "false")
+
+    main = importlib.reload(src.main)
+
+    async def run():
+        transport = httpx.ASGITransport(app=main.app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            contents = [f"content-{i}".encode() for i in range(5)]
+            results = await asyncio.gather(*[
+                client.post(
+                    "/api/cues",
+                    data={"name": f"Cue {i}"},
+                    files={"file": ("door.wav", io.BytesIO(content), "audio/wav")},
+                )
+                for i, content in enumerate(contents)
+            ])
+
+        # All uploads should succeed
+        for r in results:
+            assert r.status_code == 201
+
+        # Collect cue records and file contents
+        cues = [r.json() for r in results]
+        audio_dir = tmp_path / "audio"
+        file_contents = {f.name: f.read_bytes() for f in audio_dir.iterdir()}
+
+        # Each cue's file must exist, contain one of the uploaded contents,
+        # and no content may be duplicated across cues (that would mean one
+        # cue's audio silently overwrote another's).
+        used_contents = set()
+        for cue in cues:
+            fname = cue["file"]
+            assert fname in file_contents, f"Cue {cue['id']} references missing file {fname}"
+            actual = file_contents[fname]
+            assert actual in contents, (
+                f"Cue {cue['id']} file {fname} has unknown content {actual!r}"
+            )
+            assert actual not in used_contents, (
+                f"Content {actual!r} duplicated across cues — audio data loss"
+            )
+            used_contents.add(actual)
+
+        # All uploaded contents must be accounted for (none lost)
+        assert used_contents == set(contents), (
+            f"Missing contents: {set(contents) - used_contents}"
+        )
+
+    asyncio.run(run())

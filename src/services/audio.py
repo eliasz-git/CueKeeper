@@ -1,6 +1,7 @@
 """Audio file validation and storage helpers."""
 
 import asyncio
+import os
 from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
@@ -30,14 +31,25 @@ async def read_upload(file: UploadFile) -> bytes:
 
 
 def unique_audio_path(filename: str) -> Path:
-    """Return a non-colliding path under ``AUDIO_DIR`` for ``filename``."""
+    """Return a non-colliding path under ``AUDIO_DIR`` for ``filename``.
+
+    Uses ``O_CREAT | O_EXCL`` so the file is claimed atomically: two concurrent
+    requests cannot both succeed in creating the same path, eliminating the
+    TOCTOU race where the second upload silently overwrites the first cue's
+    audio data.
+    """
+    config.audio_dir().mkdir(parents=True, exist_ok=True)
     path = config.audio_dir() / filename
     stem, suffix = path.stem, path.suffix
     n = 1
-    while path.exists():
-        path = config.audio_dir() / f"{stem}-{n}{suffix}"
-        n += 1
-    return path
+    while True:
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.close(fd)
+            return path
+        except FileExistsError:
+            path = config.audio_dir() / f"{stem}-{n}{suffix}"
+            n += 1
 
 
 async def write_file(path: Path, contents: bytes) -> None:
