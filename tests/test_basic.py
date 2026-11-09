@@ -355,6 +355,41 @@ def test_429_includes_retry_after(strict_rate_client):
     assert "Retry-After" in r.headers
 
 
+def test_rate_limiter_evicts_expired_entries(monkeypatch):
+    """Expired idle entries must be evicted so the limiter table stays bounded.
+
+    Without eviction, one permanent entry is created for every (ip, path) pair
+    ever seen and ``_rate_limits`` grows without bound (resource leak) for the
+    lifetime of the server process.
+    """
+    from src.services import rate_limit as rl
+
+    rl._rate_limits.clear()
+
+    class FakeRequest:
+        def __init__(self, ip, path):
+            self.client = type("C", (), {"host": ip})()
+            self.url = type("U", (), {"path": path})()
+
+    now = {"t": 0.0}
+    monkeypatch.setattr(rl.time, "time", lambda: now["t"])
+
+    # ip1 hits /api/cues at t=0 -> an entry is created and retained.
+    now["t"] = 0.0
+    rl.check_rate_limit(FakeRequest("10.0.0.1", "/api/cues"))
+    assert "10.0.0.1" in rl._rate_limits
+
+    # Advance well past the default 60s window; ip1's entry is now stale/idle.
+    now["t"] = 120.0
+
+    # A request from a different IP triggers the sweep and must evict ip1's
+    # expired entry instead of keeping it forever.
+    rl.check_rate_limit(FakeRequest("10.0.0.2", "/api/cues"))
+
+    assert "10.0.0.1" not in rl._rate_limits, "idle entry was not evicted"
+    assert list(rl._rate_limits) == ["10.0.0.2"]
+
+
 def test_csp_header_present(client):
     r = client.get("/")
     csp = r.headers.get("Content-Security-Policy", "")
